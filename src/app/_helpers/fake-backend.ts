@@ -326,15 +326,9 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         function generateJwtToken(account) {
-<<<<<<< HEAD
             // create token that expires in 15 minutes
-            const tokenPayload = { 
-                 exp: Math.round(new Date(Date.now() + 15*60*1000).getTime() / 1000),
-                // exp: 1,
-=======
             const tokenPayload = {
                 exp: Math.round(Date.now() / 1000) + 15 * 60,
->>>>>>> 2d1a6460a853074e97dc0668ca73b50ef6ccac5b
                 id: account.id
             };
             return `fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}`;
