@@ -4,6 +4,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home';
 import { AuthGuard } from './_helpers';
 import { Role } from './_models';
+import { WorkflowsComponent } from './admin/workflows/workflows.component';
+import { RequestComponent } from './admin/request/request.component';
 
 const accountModule = () => import('./account/account.module').then(x => x.AccountModule);
 const adminModule = () => import('./admin/admin.module').then(x => x.AdminModule);
@@ -14,6 +16,8 @@ const routes: Routes = [
     { path: 'account', loadChildren: accountModule },
     { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
     { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
+    { path: 'workflows', component: WorkflowsComponent },
+    { path: 'request', component: RequestComponent },
 
     // otherwise redirect to home
     { path: '**', redirectTo: '' }
