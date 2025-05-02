@@ -25,7 +25,8 @@
           </tbody>
         </table>
       </div>
-      <button *ngIf="account()?.role ==='Admin'" class="btn btn-primary float-end(click)="add()>Add Department
-      </button>
+      <button *ngIf="account()?.role === 'Admin'" class="btn btn-primary float-end" (click)="add()">
+        Add Department
+      </button>      
     </div>
   </div>
