@@ -14,13 +14,23 @@ localStorage.removeItem(accountsKey);
 // Always start with an empty account list
 let accounts: any[] = [];
 
+// initial departments data
+let departments = [
+    { id: 1, name: 'Engineering', description: 'Software development team', employeeCount: 1 },
+    { id: 2, name: 'Marketing', description: 'Marketing team', employeeCount: 1 },
+    { id: 3, name: 'IT', description: 'test', employeeCount: 0 }
+];
+
+let workflows: any[] = [];
+let requests: any[] = [];
+let employees: any[] = [];
+
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
     constructor(private alertService: AlertService) {}
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         const { url, method, headers, body } = request;
-        const alertService = this.alertService;
 
         return handleRoute();
 
@@ -52,6 +62,37 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     return updateAccount();
                 case url.match(/\/accounts\/\d+$/) && method === 'DELETE':
                     return deleteAccount();
+
+                // Department routes
+                case url.endsWith('/departments') && method === 'GET':
+                    return getDepartments();
+                case url.match(/\/departments\/\d+$/) && method === 'GET':
+                    return getDepartmentById();
+                case url.endsWith('/departments') && method === 'POST':
+                    return createDepartment();
+                case url.match(/\/departments\/\d+$/) && method === 'PUT':
+                    return updateDepartment();
+                case url.match(/\/departments\/\d+$/) && method === 'DELETE':
+                    return deleteDepartment();
+
+                // Workflow routes
+                case url.endsWith('/workflows') && method === 'GET':
+                    return getWorkflows();
+                case url.match(/\/workflows\/employee\/\d+$/) && method === 'GET':
+                    return getWorkflowsByEmployee();
+                case url.match(/\/workflows\/\d+$/) && method === 'PUT':
+                    return updateWorkflow();
+
+                // Request routes
+                case url.endsWith('/requests') && method === 'GET':
+                    return getRequests();
+                case url.endsWith('/requests') && method === 'POST':
+                    return createRequest();
+                case url.match(/\/requests\/\d+$/) && method === 'PUT':
+                    return updateRequest();
+                case url.match(/\/requests\/\d+$/) && method === 'DELETE':
+                    return deleteRequest();
+
                 default:
                     return next.handle(request);
             }
@@ -118,7 +159,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             if (accounts.find(x => x.email === account.email)) {
                 setTimeout(() => {
-                    alertService.info(`
+                    this.alertService.info(`
                         <h4>Email Already Registered</h4>
                         <p>Your email ${account.email} is already registered.</p>
                         <p>If you don't know your password please visit the <a href="${location.origin}/account/forgot-password">forgot password</a> page.</p>
@@ -142,7 +183,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
                 setTimeout(() => {
                     const verifyUrl = `${location.origin}/account/verify-email?token=${account.verificationToken}`;
-                    alertService.info(`
+                    this.alertService.info(`
                         <h4>Verification Email</h4>
                         <p>Thanks for registering!</p>
                         <p>Please click the below link to verify your email address:</p>
@@ -166,6 +207,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             account.isVerified = true;
             account.status = 'Active';
             localStorage.setItem(accountsKey, JSON.stringify(accounts));
+            this.alertService.info(`Account ${account.email} verified successfully`);
             return ok();
         }
 
@@ -180,7 +222,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             setTimeout(() => {
                 const resetUrl = `${location.origin}/account/reset-password?token=${account.resetToken}`;
-                alertService.info(`
+                this.alertService.info(`
                     <h4>Reset Password Email</h4>
                     <p>Please click the below link to reset your password. It will be valid for 1 day:</p>
                     <p><a href="${resetUrl}">${resetUrl}</a></p>
@@ -275,6 +317,122 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 setTimeout(() => location.reload(), 500);
             }
 
+            return ok();
+        }
+
+        function getDepartments() {
+            if (!isAuthenticated()) return unauthorized();
+            return ok(departments);
+        }
+
+        function getDepartmentById() {
+            if (!isAuthenticated()) return unauthorized();
+            const department = departments.find(x => x.id === idFromUrl());
+            return ok(department);
+        }
+
+        function createDepartment() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const department = body;
+            department.id = departments.length ? Math.max(...departments.map(x => x.id)) + 1 : 1;
+            department.employeeCount = 0;
+            departments.push(department);
+
+            return ok();
+        }
+
+        function updateDepartment() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const params = body;
+            const department = departments.find(x => x.id === idFromUrl());
+            
+            if (!department) return error('Department not found');
+            
+            Object.assign(department, params);
+            
+            return ok();
+        }
+
+        function deleteDepartment() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const id = idFromUrl();
+            const department = departments.find(x => x.id === id);
+            
+            if (!department) return error('Department not found');
+            if (department.employeeCount > 0) return error('Cannot delete department with employees');
+            
+            departments = departments.filter(x => x.id !== id);
+            
+            return ok();
+        }
+
+        function getWorkflows() {
+            if (!isAuthenticated()) return unauthorized();
+            return ok(workflows);
+        }
+
+        function getWorkflowsByEmployee() {
+            if (!isAuthenticated()) return unauthorized();
+            
+            const urlParts = url.split('/');
+            const employeeId = parseInt(urlParts[urlParts.length - 1]);
+            
+            const employeeWorkflows = workflows.filter(x => x.employeeId === employeeId);
+            return ok(employeeWorkflows);
+        }
+
+        function updateWorkflow() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const params = body;
+            const workflow = workflows.find(x => x.id === idFromUrl());
+            
+            if (!workflow) return error('Workflow not found');
+            
+            Object.assign(workflow, params);
+            
+            return ok();
+        }
+
+        function getRequests() {
+            if (!isAuthenticated()) return unauthorized();
+            return ok(requests);
+        }
+
+        function createRequest() {
+            if (!isAuthenticated()) return unauthorized();
+
+            const request = body;
+            request.id = requests.length ? Math.max(...requests.map(x => x.id)) + 1 : 1;
+            request.status = 'Pending';
+            request.employee = employees.find(x => x.id === request.employeeId);
+            requests.push(request);
+
+            return ok();
+        }
+
+        function updateRequest() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const params = body;
+            const request = requests.find(x => x.id === idFromUrl());
+            
+            if (!request) return error('Request not found');
+            
+            Object.assign(request, params);
+            
+            return ok();
+        }
+
+        function deleteRequest() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const id = idFromUrl();
+            requests = requests.filter(x => x.id !== id);
+            
             return ok();
         }
 

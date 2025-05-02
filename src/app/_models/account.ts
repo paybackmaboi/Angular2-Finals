@@ -1,14 +1,13 @@
 ﻿import { Role } from './role';
 
-export class Account {
-    id: string;
-    title: string;
-    firstName: string;
-    lastName: string;
+export interface Account {
+    id: number;
+    title?: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
     role: Role;
-    status: string;
+    status?: string;
     jwtToken?: string;
-    dateCreated?: string;
-    isVerified?: boolean;
+    employeeId?: number;
 }

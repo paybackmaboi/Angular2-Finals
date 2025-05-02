@@ -1,22 +1,43 @@
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { RouterModule, Routes } from '@angular/router';
+import { AdminComponent } from './admin.component';
 
-import { AdminRoutingModule } from './admin-routing.module';
-import { SubNavComponent } from './subnav.component';
-import { LayoutComponent } from './layout.component';
-import { OverviewComponent } from './overview.component';
+const routes: Routes = [
+    {
+        path: '',
+        component: AdminComponent,
+        children: [
+            { path: '', redirectTo: 'departments', pathMatch: 'full' },
+            { 
+                path: 'departments', 
+                loadChildren: () => import('./departments/departments.module')
+                    .then(m => m.DepartmentsModule) 
+            },
+            {
+                path: 'employees',
+                loadChildren: () => import('./employees/employees.module')
+                    .then(m => m.EmployeesModule)
+            },
+            {
+                path: 'accounts',
+                loadChildren: () => import('./accounts/accounts.module')
+                    .then(m => m.AccountsModule)
+            },
+            {
+                path: 'workflows',
+                loadChildren: () => import('./workflows/workflows.module')
+                    .then(m => m.WorkflowsModule)
+            },
+            {
+                path: 'requests',
+                loadChildren: () => import('./requests/requests.module')
+                    .then(m => m.RequestsModule)
+            }
+        ]
+    }
+];
 
 @NgModule({
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        AdminRoutingModule
-    ],
-    declarations: [
-        SubNavComponent,
-        LayoutComponent,
-        OverviewComponent
-    ]
+    imports: [RouterModule.forChild(routes)]
 })
 export class AdminModule { }

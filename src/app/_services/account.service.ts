@@ -99,13 +99,16 @@ export class AccountService {
             }));
     }
     
-    delete(id: string) {
-        return this.http.delete(`${this.baseUrl}/accounts/${id}`)
-            .pipe(finalize(() => {
-                // auto logout if the logged in account was deleted
-                if (id === this.accountValue.id)
+    delete(id: string | number) {
+        return this.http.delete(`${this.baseUrl}/${id}`).pipe(
+            map(x => {
+                // Compare as strings
+                if (this.accountValue && id.toString() === this.accountValue.id.toString()) {
                     this.logout();
-            }));
+                }
+                return x;
+            })
+        );
     }
 
     // helper methods
