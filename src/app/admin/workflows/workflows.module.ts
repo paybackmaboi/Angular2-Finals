@@ -1,15 +1,19 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { ListComponent } from './list.component';
-
-const routes: Routes = [
-    { path: 'employee/:employeeId', component: ListComponent }
-];
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { WorkflowsRoutingModule } from './workflows-routing.module';
+import { WorkflowListComponent } from './workflow-list.component';
+import { WorkflowCreateComponent } from './workflow-create.component';
 
 @NgModule({
-    imports: [
-        RouterModule.forChild(routes),
-        ListComponent
-    ]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    WorkflowsRoutingModule
+  ],
+  declarations: [
+    WorkflowListComponent,
+    WorkflowCreateComponent
+  ]
 })
 export class WorkflowsModule { }
