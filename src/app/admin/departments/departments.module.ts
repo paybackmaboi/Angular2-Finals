@@ -1,21 +1,19 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-import { DepartmentsRoutingModule } from './departments-routing.module';
+import { RouterModule, Routes } from '@angular/router';
 import { ListComponent } from './list.component';
 import { AddEditComponent } from './add-edit.component';
 
+const routes: Routes = [
+    { path: '', component: ListComponent },
+    { path: 'add', component: AddEditComponent },
+    { path: 'edit/:id', component: AddEditComponent }
+];
+
 @NgModule({
-  declarations: [
-    ListComponent,
-    AddEditComponent
-  ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    DepartmentsRoutingModule
-  ]
+    imports: [
+        RouterModule.forChild(routes),
+        ListComponent,
+        AddEditComponent
+    ]
 })
 export class DepartmentsModule { }

@@ -1,60 +1,61 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { DepartmentService } from '@app/_services';
-import { AccountService } from '@app/_services';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { DepartmentService, AlertService, AccountService } from '@app/_services';
+import { first } from 'rxjs/operators';
+import { Department } from '@app/_models/department';
+import { Account } from '@app/_models';
 
 @Component({
-  selector: 'app-list',
-  templateUrl: './list.component.html',
-  standalone: false
+    selector: 'app-department-list',
+    templateUrl: './list.component.html',
+    standalone: true,
+    imports: [CommonModule, RouterModule]
 })
 export class ListComponent implements OnInit {
-  departments: any[] = [];
-  errorMessage: string;
+    departments: Department[] = [];
+    account: Account;
 
-  constructor(
-    private departmentService: DepartmentService,
-    private router: Router,
-    private accountService: AccountService
-  ) {}
-
-  ngOnInit() {
-    this.loadDepartments();
-  }
-
-  loadDepartments() {
-    this.departmentService.getAll().subscribe({
-      next: data => {
-        this.departments = data;
-      },
-      error: err => {
-        this.errorMessage = 'Failed to load departments';
-      }
-    });
-  }
-
-  edit(id: string) {
-    this.router.navigate(['/admin/departments/edit', id]);
-  }
-
-  delete(id: string) {
-    if (confirm('Are you sure you want to delete this department?')) {
-      this.departmentService.delete(id).subscribe({
-        next: () => {
-          this.loadDepartments();
-        },
-        error: err => {
-          this.errorMessage = 'Delete failed';
-        }
-      });
+    constructor(
+        private departmentService: DepartmentService,
+        private router: Router,
+        private alertService: AlertService,
+        private accountService: AccountService
+    ) {
+        this.accountService.account.subscribe(x => this.account = x);
     }
-  }
 
-  add() {
-    this.router.navigate(['/admin/departments/add']);
-  }
+    ngOnInit() {
+        this.loadDepartments();
+    }
 
-  account() {
-    return this.accountService.accountValue;
-  }
+    private loadDepartments() {
+        this.departmentService.getAll()
+            .pipe(first())
+            .subscribe(departments => this.departments = departments);
+    }
+
+    add() {
+        this.router.navigate(['../departments/add']);
+    }
+
+    edit(id: number) {
+        this.router.navigate([`../departments/edit/${id}`]);
+    }
+
+    deleteDepartment(id: number) {
+        if (confirm('Are you sure you want to delete this department?')) {
+            this.departmentService.delete(id)
+                .pipe(first())
+                .subscribe({
+                    next: () => {
+                        this.alertService.success('Department deleted successfully');
+                        this.departments = this.departments.filter(x => x.id !== id);
+                    },
+                    error: error => {
+                        this.alertService.error(error);
+                    }
+                });
+        }
+    }
 }
