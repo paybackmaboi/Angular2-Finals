@@ -1,25 +1,21 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-
-import { SubNavComponent } from './subnav.component';
+import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
-import { OverviewComponent } from './overview.component';
-
-const accountsModule = () => import('./accounts/accounts.module').then(x => x.AccountsModule);
 
 const routes: Routes = [
-    { path: '', component: SubNavComponent, outlet: 'subnav' },
-    {
-        path: '', component: LayoutComponent,
-        children: [
-            { path: '', component: OverviewComponent },
-            { path: 'accounts', loadChildren: accountsModule }
-        ]
-    }
+  {
+    path: '',
+    component: LayoutComponent,
+    children: [
+      { path: 'accounts', loadChildren: () => import('./accounts/accounts.module').then(m => m.AccountsModule) },
+      { path: 'employee', loadChildren: () => import('./employee/employee.module').then(m => m.EmployeeModule) },
+      { path: '', redirectTo: 'accounts', pathMatch: 'full' }, // Redirect to 'accounts'
+    ],
+  },
 ];
 
 @NgModule({
-    imports: [RouterModule.forChild(routes)],
-    exports: [RouterModule]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class AdminRoutingModule { }
+export class AdminRoutingModule {}
