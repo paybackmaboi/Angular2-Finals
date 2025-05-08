@@ -1,4 +1,12 @@
-﻿<div class="p-4">
+﻿<!-- admin subnav -->
+<nav class="admin-nav navbar navbar-expand navbar-light">
+    <div class="navbar-nav">
+        <a routerLink="/admin/accounts" routerLinkActive="active" class="nav-item nav-link">Accounts</a>
+        <a routerLink="/admin/departments" routerLinkActive="active" class="nav-item nav-link">Departments</a>
+    </div>
+</nav>
+
+<div class="p-4">
     <div class="container">
         <router-outlet></router-outlet>
     </div>
